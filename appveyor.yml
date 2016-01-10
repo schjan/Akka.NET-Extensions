@@ -1,0 +1,44 @@
+init:
+  - git config --global core.autocrlf input
+
+assembly_info:
+  patch: false
+
+install:
+  - cmd: nuget restore src/Akka.NET-Extensions.sln
+  - ps: choco install gitversion.portable -y
+
+before_build:
+  - ps: gitversion /l console /output buildserver /updateAssemblyInfo
+
+build:
+  project: src/Akka.NET-Extensions.sln
+  parallel: true
+  verbosity: quiet
+
+after_build:
+  - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj
+
+artifacts:
+  - path: /.*\.nupkg/
+  
+cache:
+  - src\packages -> **\packages.config
+  - tools\
+
+deploy:
+  - provider: NuGet
+    artifact: /.*\.nupkg/
+    api_key:
+      secure: f8kuz/sBn2/omL6WhAC1RpipIT92gTBQoiu49QYwMvF3jnvCJDZSRBG5QYWev9tB
+    on:
+      branch: master
+      appveyor_repo_tag: true
+  
+  - provider: GitHub
+    artifact: /.*\.nupkg/
+    draft: false
+    prerelease: false
+    on:
+      branch: master
+      appveyor_repo_tag: true 
