@@ -1,6 +1,8 @@
 init:
   - git config --global core.autocrlf input
 
+configuration: Release
+
 assembly_info:
   patch: false
 
@@ -16,15 +18,20 @@ build:
   parallel: true
   verbosity: quiet
 
-after_build:
+after_test:
   - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj -version ""%GitVersion_NuGetVersion%"" -prop ""target=%CONFIGURATION%""
 
 artifacts:
-  - path: /.*\.nupkg/
+  - path: '**\*.nupkg'
   
 cache:
   - src\packages -> **\packages.config
 
+nuget:
+  account_feed: false
+  project_feed: true
+  disable_publish_on_pr: true   
+  
 deploy:
   - provider: NuGet
     artifact: /.*\.nupkg/
