@@ -17,14 +17,13 @@ build:
   verbosity: quiet
 
 after_build:
-  - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj
+  - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj -version ""%GitVersion_NuGetVersion%"" -prop ""target=%CONFIGURATION%""
 
 artifacts:
   - path: /.*\.nupkg/
   
 cache:
   - src\packages -> **\packages.config
-  - tools\
 
 deploy:
   - provider: NuGet
