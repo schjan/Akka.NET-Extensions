@@ -22,7 +22,7 @@ after_test:
   - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj -version ""%GitVersion_NuGetVersion%"" -prop ""target=%CONFIGURATION%""
 
 artifacts:
-  - path: '**\*.nupkg'
+  - path: '**\SchJan.*.nupkg'
   
 cache:
   - src\packages -> **\packages.config
@@ -45,6 +45,8 @@ deploy:
     artifact: /.*\.nupkg/
     draft: false
     prerelease: false
+    auth_token:
+      secure: 3f5df086617c202aa2845a335daaa2df02d7a0cc
     on:
       branch: master
       appveyor_repo_tag: true 
