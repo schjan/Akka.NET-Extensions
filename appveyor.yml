@@ -9,6 +9,7 @@ assembly_info:
 install:
   - cmd: nuget restore src/Akka.NET-Extensions.sln
   - ps: choco install gitversion.portable -y
+  - cmd: python -m pip install --user codecov
 
 before_build:
   - ps: gitversion /l console /output buildserver /updateAssemblyInfo
@@ -20,6 +21,7 @@ build:
 
 after_test:
   - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj -version ""%GitVersion_NuGetVersion%"" -prop ""target=%CONFIGURATION%""
+  - codecov
 
 artifacts:
   - path: '**\SchJan.*.nupkg'
