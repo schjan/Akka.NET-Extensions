@@ -1,59 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Akka.Actor;
 using Akka.Event;
 
 namespace SchJan.Akka.PubSub
 {
-    public abstract class TypedPublishMessageActorBase : TypedActor, IHandle<SubscribeMessage>, IHandle<UnsubscribeMessage>, IHandle<Terminated>
+    /// <summary>
+    ///     TypedActor which can publish defined types of messages to subscribers.
+    /// </summary>
+    public abstract class TypedPublishMessageActorBase : TypedActor, IHandle<SubscribeMessage>,
+        IHandle<UnsubscribeMessage>, IHandle<Terminated>, IPublishMessageActor
     {
         private readonly bool _autoWatchSubscriber;
 
         /// <summary>
-        /// Messagetypes you can subscribe to.
+        ///     Creates a new instance of <see cref="TypedPublishMessageActorBase" />.
         /// </summary>
-        protected IReadOnlyList<Type> SubscribableMessages { get; }
-
-        /// <summary>
-        /// Subscriber List in style of Tuple(ActorRef, MessageType)
-        /// </summary>
-        protected IList<Tuple<IActorRef, Type>> Subscribers { get; }
-
+        /// <param name="autoWatchSubscriber">
+        ///     True if actor should watch for <see cref="Terminated">Termination</see> of
+        ///     subscribers.
+        /// </param>
         protected TypedPublishMessageActorBase(bool autoWatchSubscriber = true)
         {
             _autoWatchSubscriber = autoWatchSubscriber;
 
-            SubscribableMessages =
-                Attribute.GetCustomAttributes(GetType())
-                    .OfType<PublishMessageAttribute>()
-                    .Select(attr => attr.MessageType)
-                    .ToList();
+            SubscribableMessages = this.GetMessageTypesByAttributes();
 
             Subscribers = new List<Tuple<IActorRef, Type>>();
         }
 
-        protected void PublishMessage<T>(T message)
-            where T : class
-        {
-            var type = typeof(T);
-
-            if (!SubscribableMessages.Contains(type))
-            {
-                Context.GetLogger().Info("PublishMessage of Type {0} failed. Type not valid", type.Name);
-                return;
-            }
-
-            var subscribers = Subscribers.Where(x => x.Item2 == type);
-
-            foreach (var subscriber in subscribers)
-            {
-                subscriber.Item1.Tell(message);
-            }
-        }
-
         /// <summary>
-        /// Handles the <see cref="SubscribeMessage"/> to handle subscribtions.
+        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
         /// </summary>
         /// <param name="message">The message.</param>
         public void Handle(SubscribeMessage message)
@@ -61,51 +38,47 @@ namespace SchJan.Akka.PubSub
             if (_autoWatchSubscriber)
                 Context.Watch(message.Subscriber);
 
-            if (Subscribers.Any(x => Equals(x.Item1, message.Subscriber) && x.Item2 == message.MessageType))
-                return;
-
-            if (!SubscribableMessages.Contains(message.MessageType))
-                return;
-
-            Subscribers.Add(new Tuple<IActorRef, Type>(message.Subscriber, message.MessageType));
+            this.HandleSubscription(message);
         }
 
         /// <summary>
-        /// Handles unsubscribtions.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void Handle(UnsubscribeMessage message)
-        {
-            if (message.UnsubscribeAllTypes)
-            {
-                RemoveActorFromSubscribers(message.Unsubscriber);
-            }
-            else
-                Subscribers.Remove(
-                    Subscribers.FirstOrDefault(
-                        x => Equals(x.Item1, message.Unsubscriber) && x.Item2 == message.MessageType));
-        }
-
-        /// <summary>
-        /// Handles the specified message.
+        ///     Handles the specified message.
         /// </summary>
         /// <param name="message">The message.</param>
         public void Handle(Terminated message)
         {
-            RemoveActorFromSubscribers(message.ActorRef);
+            if (this.RemoveFromSubscribers(message.ActorRef) && _autoWatchSubscriber)
+                Context.Unwatch(message.ActorRef);
         }
 
-        private void RemoveActorFromSubscribers(IActorRef actor)
+        /// <summary>
+        ///     Handles unsubscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public void Handle(UnsubscribeMessage message)
         {
-            if (actor == null)
-                return;
-
-            Context.Unwatch(actor);
-
-            foreach (var unsubscriber in Subscribers.Where(x => Equals(x.Item1, actor)).ToList())
-            {
-                Subscribers.Remove(unsubscriber);
-            }
+            if (this.HandleUnsubscription(message) && _autoWatchSubscriber)
+                Context.Unwatch(message.Unsubscriber);
         }
+
+        /// <summary>
+        ///     Messagetypes you can subscribe to.
+        /// </summary>
+        public IReadOnlyList<Type> SubscribableMessages { get; }
+
+        /// <summary>
+        ///     Logs a message with the Info level.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The arguments.</param>
+        public void LogInfo(string format, params object[] args)
+        {
+            Context.GetLogger().Info(format, args);
+        }
+
+        /// <summary>
+        ///     Subscriber List in style of Tuple(ActorRef, MessageType)
+        /// </summary>
+        public IList<Tuple<IActorRef, Type>> Subscribers { get; }
     }
 }
