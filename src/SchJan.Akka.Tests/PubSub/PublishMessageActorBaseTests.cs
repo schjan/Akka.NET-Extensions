@@ -146,7 +146,20 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(Subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
         }
 
-#region Helper methods
+        [Test(Description = "Unsubscribe from all Messages with Actor Terminated")]
+        [Ignore("Terminated message not received by Subject...")]
+        public async void TestUnsubscribeWatchTerminated()
+        {
+            var testProbe = CreateTestProbe("t1");
+
+            testProbe.Send(Subject, new SubscribeMessage(testProbe, typeof (FooMessage)));
+
+            await testProbe.GracefulStop(TimeSpan.FromSeconds(1));
+
+            Assert.That(Subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
+        }
+
+        #region Helper methods
 
         private TestProbe CreateTestProbeAndSubscribeToFoo()
         {

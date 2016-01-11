@@ -7,7 +7,7 @@ using SchJan.Akka.PubSub;
 namespace SchJan.Akka.Tests.PubSub
 {
     public class UntypedPublishMessageActorBaseTests :
-        PublishMessageActorBaseTests<TypedPublishMessageActorBaseTests.TypedPublishMessageActorBaseProxy>
+        PublishMessageActorBaseTests<UntypedPublishMessageActorBaseTests.UntypedPublishMessageActorBaseProxy>
     {
         [PublishMessage(typeof (FooMessage))]
         [PublishMessage(typeof (TestMessage))]
