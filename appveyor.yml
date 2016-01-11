@@ -5,6 +5,10 @@ init:
 
 configuration: Release
 
+environment:
+  CODECOV_TOKEN:
+    secure: M1TbEVum9doUWXqB/mTEYnL8wYaXr5V1+Dz7JluCjac6bYRq82hTMZJ8JeZpsZfA
+
 assembly_info:
   patch: false
 
