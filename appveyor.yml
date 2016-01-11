@@ -9,7 +9,7 @@ assembly_info:
 install:
   - cmd: nuget restore src/Akka.NET-Extensions.sln
   - ps: choco install gitversion.portable -y
-  - cmd: python -m pip install --user codecov
+  - cmd: python -m pip install codecov
 
 before_build:
   - ps: gitversion /l console /output buildserver /updateAssemblyInfo
