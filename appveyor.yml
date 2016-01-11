@@ -22,7 +22,7 @@ build:
   verbosity: minimal
 
 test_script:
-  - .\tools\OpenCover.4.6.166\OpenCover.Console.exe -register:user -target:nunit-console.exe -targetargs: "src\SchJan.Akka.Tests\bin\$env:CONFIGURATION\SchJan.Akka.Tests.dll /noshadow /appveyor" -returntargetcode -filter:"+[SchJan.Akka*]*" -hideskipped:All -output:opencoverCoverage.xml
+  - .\tools\OpenCover.4.6.166\OpenCover.Console.exe -register:user -target:nunit-console.exe -targetargs:"src\SchJan.Akka.Tests\bin\$env:CONFIGURATION/SchJan.Akka.Tests.dll -noshadow -appveyor" -returntargetcode -filter:"+[SchJan.Akka*]*" -hideskipped:All -output:opencoverCoverage.xml
   - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
   - pip install codecov
   - codecov -f "opencoverCoverage.xml"
