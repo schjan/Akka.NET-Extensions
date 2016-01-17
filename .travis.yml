@@ -1,0 +1,18 @@
+language: csharp
+
+solution: src/Akka.NET-Extensions.sln
+
+install:
+  - nuget restore src/Akka.NET-Extensions.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+
+script:
+  - xbuild /p:Configuration=Release src/Akka.NET-Extensions.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./src/SchJan.Akka.Tests/bin/Release/SchJan.Akka.Tests.dll
+
+sudo: false
+
+cache:
+ directories:
+  - src/packages
+  - testrunner
