@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
@@ -23,15 +18,12 @@ namespace SchJan.Akka.Tests.PubSub
                 new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
 
             var receiverActor = CreateTestProbe();
-            terminatedActor.Send(pubSubActor,
+            receiverActor.Send(pubSubActor,
                 new SubscribeMessage(receiverActor, typeof (ActorUnsubscribedMessage)));
 
             terminatedActor.Tell(PoisonPill.Instance);
 
-            var message = receiverActor.ExpectMsg<ActorUnsubscribedMessage>();
-
-            Assert.That(message.Terminated, Is.True);
-            Assert.That(message.Actor, Is.EqualTo(terminatedActor));
+            receiverActor.ExpectMsg<ActorUnsubscribedMessage>(msg => msg.Terminated && msg.Actor.Equals(terminatedActor));
         }
 
         [Test]
@@ -44,15 +36,13 @@ namespace SchJan.Akka.Tests.PubSub
                 new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
 
             var receiverActor = CreateTestProbe();
-            terminatedActor.Send(pubSubActor,
+            receiverActor.Send(pubSubActor,
                 new SubscribeMessage(receiverActor, typeof (ActorUnsubscribedMessage)));
 
             terminatedActor.Send(pubSubActor, new UnsubscribeMessage(terminatedActor));
 
-            var message = receiverActor.ExpectMsg<ActorUnsubscribedMessage>();
-
-            Assert.That(message.Terminated, Is.False);
-            Assert.That(message.Actor, Is.EqualTo(terminatedActor));
+            receiverActor.ExpectMsg<ActorUnsubscribedMessage>(
+                msg => !msg.Terminated && msg.Actor.Equals(terminatedActor));
         }
 
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
