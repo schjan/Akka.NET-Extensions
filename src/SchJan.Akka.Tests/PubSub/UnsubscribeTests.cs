@@ -1,4 +1,5 @@
-﻿using Akka.Actor;
+﻿using System;
+using Akka.Actor;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
 using SchJan.Akka.PubSub;
@@ -43,6 +44,8 @@ namespace SchJan.Akka.Tests.PubSub
 
             receiverActor.ExpectMsg<ActorUnsubscribedMessage>(
                 msg => !msg.Terminated && msg.Actor.Equals(terminatedActor));
+
+            terminatedActor.ExpectNoMsg(TimeSpan.FromSeconds(1));
         }
 
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
