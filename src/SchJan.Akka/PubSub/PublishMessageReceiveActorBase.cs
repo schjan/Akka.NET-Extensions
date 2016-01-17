@@ -10,7 +10,10 @@ namespace SchJan.Akka.PubSub
     /// </summary>
     public class PublishMessageReceiveActorBase : ReceiveActor, IPublishMessageActor
     {
-        private readonly bool _autoWatchSubscriber;
+        /// <summary>
+        ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
+        /// </summary>
+        public bool AutoWatchSubscriber { get; }
 
         /// <summary>
         ///     Creates a new instance of <see cref="PublishMessageReceiveActorBase" />.
@@ -21,7 +24,7 @@ namespace SchJan.Akka.PubSub
         /// </param>
         public PublishMessageReceiveActorBase(bool autoWatchSubscriber = true)
         {
-            _autoWatchSubscriber = autoWatchSubscriber;
+            AutoWatchSubscriber = autoWatchSubscriber;
 
             SubscribableMessages = this.GetMessageTypesByAttributes();
 
@@ -29,22 +32,17 @@ namespace SchJan.Akka.PubSub
 
             Receive<SubscribeMessage>(message =>
             {
-                if (_autoWatchSubscriber)
-                    Context.Watch(message.Subscriber);
-
                 this.HandleSubscription(message);
             });
 
             Receive<UnsubscribeMessage>(message =>
             {
-                if (this.HandleUnsubscription(message) && _autoWatchSubscriber)
-                    Context.Unwatch(message.Unsubscriber);
+                this.HandleUnsubscription(message);
             });
 
             Receive<Terminated>(message =>
             {
-                if (this.RemoveFromSubscribers(message.ActorRef) && _autoWatchSubscriber)
-                    Context.Unwatch(message.ActorRef);
+                this.RemoveFromSubscribers(message.ActorRef);
             });
         }
 
@@ -67,5 +65,10 @@ namespace SchJan.Akka.PubSub
         {
             Context.GetLogger().Info(format, args);
         }
+
+        /// <summary>
+        ///     ActorContext Proxy.
+        /// </summary>
+        public IActorContext ActorContext => Context;
     }
 }

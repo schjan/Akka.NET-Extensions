@@ -25,6 +25,9 @@ namespace SchJan.Akka.PubSub
                 self.Subscribers.Remove(unsubscriber);
             }
 
+            if (self.AutoWatchSubscriber)
+                self.ActorContext.Unwatch(actor);
+
             return true;
         }
 
@@ -44,6 +47,9 @@ namespace SchJan.Akka.PubSub
         /// <param name="message">The <see cref="SubscribeMessage"/></param>
         internal static void HandleSubscription(this IPublishMessageActor self, SubscribeMessage message)
         {
+            if (self.AutoWatchSubscriber)
+                self.ActorContext.Watch(message.Subscriber);
+
             if (self.Subscribers.Any(x => Equals(x.Item1, message.Subscriber) && x.Item2 == message.MessageType))
                 return;
 
@@ -64,9 +70,14 @@ namespace SchJan.Akka.PubSub
             if (message.UnsubscribeAllTypes)
                 return RemoveFromSubscribers(self, message.Unsubscriber);
 
-            return self.Subscribers.Remove(
+            var result = self.Subscribers.Remove(
                 self.Subscribers.FirstOrDefault(
                     x => Equals(x.Item1, message.Unsubscriber) && x.Item2 == message.MessageType));
+
+            if (result && self.AutoWatchSubscriber)
+                self.ActorContext.Unwatch(message.Unsubscriber);
+
+            return result;
         }
 
         /// <summary>

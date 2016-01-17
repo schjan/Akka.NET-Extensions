@@ -25,5 +25,15 @@ namespace SchJan.Akka.PubSub
         /// <param name="format">The format.</param>
         /// <param name="args">The arguments.</param>
         void LogInfo(string format, params object[] args);
+        
+        /// <summary>
+        ///     ActorContext Proxy.
+        /// </summary>
+        IActorContext ActorContext { get; }
+
+        /// <summary>
+        ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
+        /// </summary>
+        bool AutoWatchSubscriber { get; }
     }
 }

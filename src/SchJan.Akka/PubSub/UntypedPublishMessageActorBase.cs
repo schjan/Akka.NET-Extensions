@@ -10,7 +10,11 @@ namespace SchJan.Akka.PubSub
     /// </summary>
     public abstract class UntypedPublishMessageActorBase : UntypedActor, IPublishMessageActor
     {
-        private readonly bool _autoWatchSubscriber;
+
+        /// <summary>
+        ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
+        /// </summary>
+        public bool AutoWatchSubscriber { get; }
 
         /// <summary>
         ///     Creates a new instance of <see cref="UntypedPublishMessageActorBase" />.
@@ -21,7 +25,7 @@ namespace SchJan.Akka.PubSub
         /// </param>
         protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true)
         {
-            _autoWatchSubscriber = autoWatchSubscriber;
+            AutoWatchSubscriber = autoWatchSubscriber;
 
             SubscribableMessages = this.GetMessageTypesByAttributes();
 
@@ -56,27 +60,23 @@ namespace SchJan.Akka.PubSub
         {
             if (message is SubscribeMessage)
             {
-                var subscribeMessage = (SubscribeMessage) message;
-
-                if (_autoWatchSubscriber)
-                    Context.Watch(subscribeMessage.Subscriber);
-
-                this.HandleSubscription(subscribeMessage);
+                this.HandleSubscription((SubscribeMessage)message);
             }
             else if (message is UnsubscribeMessage)
             {
-                var unsubscribeMessage = (UnsubscribeMessage) message;
-
-                if (this.HandleUnsubscription(unsubscribeMessage) && _autoWatchSubscriber)
-                    Context.Unwatch(unsubscribeMessage.Unsubscriber);
+                this.HandleUnsubscription((UnsubscribeMessage)message);
             }
             else if (message is Terminated)
             {
                 var terminatedMessage = (Terminated) message;
 
-                if (this.RemoveFromSubscribers(terminatedMessage.ActorRef) && _autoWatchSubscriber)
-                    Context.Unwatch(terminatedMessage.ActorRef);
+                this.RemoveFromSubscribers(terminatedMessage.ActorRef);
             }
         }
+
+        /// <summary>
+        ///     ActorContext Proxy.
+        /// </summary>
+        public IActorContext ActorContext => Context;
     }
 }

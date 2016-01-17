@@ -11,7 +11,11 @@ namespace SchJan.Akka.PubSub
     public abstract class TypedPublishMessageActorBase : TypedActor, IHandle<SubscribeMessage>,
         IHandle<UnsubscribeMessage>, IHandle<Terminated>, IPublishMessageActor
     {
-        private readonly bool _autoWatchSubscriber;
+
+        /// <summary>
+        ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
+        /// </summary>
+        public bool AutoWatchSubscriber { get; }
 
         /// <summary>
         ///     Creates a new instance of <see cref="TypedPublishMessageActorBase" />.
@@ -22,7 +26,7 @@ namespace SchJan.Akka.PubSub
         /// </param>
         protected TypedPublishMessageActorBase(bool autoWatchSubscriber = true)
         {
-            _autoWatchSubscriber = autoWatchSubscriber;
+            AutoWatchSubscriber = autoWatchSubscriber;
 
             SubscribableMessages = this.GetMessageTypesByAttributes();
 
@@ -35,9 +39,6 @@ namespace SchJan.Akka.PubSub
         /// <param name="message">The message.</param>
         public void Handle(SubscribeMessage message)
         {
-            if (_autoWatchSubscriber)
-                Context.Watch(message.Subscriber);
-
             this.HandleSubscription(message);
         }
 
@@ -47,8 +48,7 @@ namespace SchJan.Akka.PubSub
         /// <param name="message">The message.</param>
         public void Handle(Terminated message)
         {
-            if (this.RemoveFromSubscribers(message.ActorRef) && _autoWatchSubscriber)
-                Context.Unwatch(message.ActorRef);
+            this.RemoveFromSubscribers(message.ActorRef);
         }
 
         /// <summary>
@@ -57,8 +57,7 @@ namespace SchJan.Akka.PubSub
         /// <param name="message">The message.</param>
         public void Handle(UnsubscribeMessage message)
         {
-            if (this.HandleUnsubscription(message) && _autoWatchSubscriber)
-                Context.Unwatch(message.Unsubscriber);
+            this.HandleUnsubscription(message);
         }
 
         /// <summary>
@@ -80,5 +79,10 @@ namespace SchJan.Akka.PubSub
         ///     Subscriber List in style of Tuple(ActorRef, MessageType)
         /// </summary>
         public IList<Tuple<IActorRef, Type>> Subscribers { get; }
+
+        /// <summary>
+        ///     ActorContext Proxy.
+        /// </summary>
+        public IActorContext ActorContext => Context;
     }
 }
