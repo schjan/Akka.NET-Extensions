@@ -1,4 +1,4 @@
-using Akka.Actor;
+﻿using Akka.Actor;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
 using SchJan.Akka.PubSub;
@@ -13,13 +13,13 @@ namespace SchJan.Akka.Tests.PubSub
         {
             var pubSubActor = Sys.ActorOf<SendsUnsubscribtionMessagesActor>();
 
-            var terminatedActor = CreateTestProbe();
-            terminatedActor.Send(pubSubActor,
-                new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
-
             var receiverActor = CreateTestProbe();
             receiverActor.Send(pubSubActor,
                 new SubscribeMessage(receiverActor, typeof (ActorUnsubscribedMessage)));
+
+            var terminatedActor = CreateTestProbe();
+            terminatedActor.Send(pubSubActor,
+                new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
 
             terminatedActor.Tell(PoisonPill.Instance);
 
@@ -31,13 +31,13 @@ namespace SchJan.Akka.Tests.PubSub
         {
             var pubSubActor = Sys.ActorOf<SendsUnsubscribtionMessagesActor>();
 
-            var terminatedActor = CreateTestProbe();
-            terminatedActor.Send(pubSubActor,
-                new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
-
             var receiverActor = CreateTestProbe();
             receiverActor.Send(pubSubActor,
                 new SubscribeMessage(receiverActor, typeof (ActorUnsubscribedMessage)));
+
+            var terminatedActor = CreateTestProbe();
+            terminatedActor.Send(pubSubActor,
+                new SubscribeMessage(terminatedActor, typeof (ActorUnsubscribedMessage)));
 
             terminatedActor.Send(pubSubActor, new UnsubscribeMessage(terminatedActor));
 
