@@ -64,6 +64,7 @@
     <Compile Include="PubSub\PublishMessageReceiveActorBaseTests.cs" />
     <Compile Include="PubSub\PublishMessageActorBaseTests.cs" />
     <Compile Include="PubSub\TypedPublishMessageActorBaseTests.cs" />
+    <Compile Include="PubSub\UnsubscribeTests.cs" />
     <Compile Include="PubSub\UntypedPublishMessageActorBaseTests.cs" />
   </ItemGroup>
   <ItemGroup>

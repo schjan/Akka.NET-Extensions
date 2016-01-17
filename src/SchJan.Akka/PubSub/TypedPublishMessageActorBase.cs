@@ -37,7 +37,7 @@ namespace SchJan.Akka.PubSub
         ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
         /// </summary>
         /// <param name="message">The message.</param>
-        public void Handle(SubscribeMessage message)
+        public virtual void Handle(SubscribeMessage message)
         {
             this.HandleSubscription(message);
         }
@@ -46,7 +46,7 @@ namespace SchJan.Akka.PubSub
         ///     Handles the specified message.
         /// </summary>
         /// <param name="message">The message.</param>
-        public void Handle(Terminated message)
+        public virtual void Handle(Terminated message)
         {
             this.RemoveFromSubscribers(message.ActorRef);
         }
@@ -55,7 +55,7 @@ namespace SchJan.Akka.PubSub
         ///     Handles unsubscribtions.
         /// </summary>
         /// <param name="message">The message.</param>
-        public void Handle(UnsubscribeMessage message)
+        public virtual void Handle(UnsubscribeMessage message)
         {
             this.HandleUnsubscription(message);
         }

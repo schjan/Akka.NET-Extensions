@@ -133,38 +133,12 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(Subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
         }
 
-        [Test(Description = "Unsubscribe from all Messages with Terminated Message")]
-        [Ignore("Terminated message not received by Subject...")]
-        public void TestUnsubscribeWatch()
-        {
-            var testProbe = CreateTestProbe("t1");
-
-            testProbe.Send(Subject, new SubscribeMessage(testProbe, typeof (FooMessage)));
-
-            testProbe.Send(Subject, new Terminated(testProbe, true, true));
-
-            Assert.That(Subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
-        }
-
-        [Test(Description = "Unsubscribe from all Messages with Actor Terminated")]
-        [Ignore("Terminated message not received by Subject...")]
-        public async void TestUnsubscribeWatchTerminated()
-        {
-            var testProbe = CreateTestProbe("t1");
-
-            testProbe.Send(Subject, new SubscribeMessage(testProbe, typeof (FooMessage)));
-
-            await testProbe.GracefulStop(TimeSpan.FromSeconds(1));
-
-            Assert.That(Subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
-        }
-
         #region Helper methods
 
         private TestProbe CreateTestProbeAndSubscribeToFoo()
         {
             var testProbe = CreateTestProbe();
-            Subject.UnderlyingActor.Subscribers.Add(new Tuple<IActorRef, Type>(testProbe, typeof(FooMessage)));
+            Subject.UnderlyingActor.Subscribers.Add(new Tuple<IActorRef, Type>(testProbe, typeof (FooMessage)));
 
             return testProbe;
         }
@@ -172,7 +146,7 @@ namespace SchJan.Akka.Tests.PubSub
         private TestProbe CreateTestProbeAndSubscribeToFooAndTest()
         {
             var testProbe = CreateTestProbeAndSubscribeToFoo();
-            Subject.UnderlyingActor.Subscribers.Add(new Tuple<IActorRef, Type>(testProbe, typeof(TestMessage)));
+            Subject.UnderlyingActor.Subscribers.Add(new Tuple<IActorRef, Type>(testProbe, typeof (TestMessage)));
 
             return testProbe;
         }
