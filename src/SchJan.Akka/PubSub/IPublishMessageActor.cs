@@ -35,5 +35,23 @@ namespace SchJan.Akka.PubSub
         ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
         /// </summary>
         bool AutoWatchSubscriber { get; }
+
+        /// <summary>
+        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        void HandleSubscriptionMessage(SubscribeMessage message);
+
+        /// <summary>
+        ///     Handles a Terminated message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        void HandleTerminationMessage(Terminated message);
+
+        /// <summary>
+        ///     Handles unsubscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        void HandleUnsubscriptionMessage(UnsubscribeMessage message);
     }
 }

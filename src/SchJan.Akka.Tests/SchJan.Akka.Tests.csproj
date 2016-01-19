@@ -61,11 +61,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PubSub\PublishMessageReceiveActorBaseTests.cs" />
-    <Compile Include="PubSub\PublishMessageActorBaseTests.cs" />
-    <Compile Include="PubSub\TypedPublishMessageActorBaseTests.cs" />
-    <Compile Include="PubSub\UnsubscribeTests.cs" />
-    <Compile Include="PubSub\UntypedPublishMessageActorBaseTests.cs" />
+    <Compile Include="PubSub\Actors\TestTerminationActor.cs" />
+    <Compile Include="PubSub\Messages\ActorUnsubscribedMessage.cs" />
+    <Compile Include="PubSub\Messages\AskMessageReceivedCountMessage.cs" />
+    <Compile Include="PubSub\Messages\FooMessage.cs" />
+    <Compile Include="PubSub\Messages\MessageReceivedCountMessage.cs" />
+    <Compile Include="PubSub\Messages\OopsMessage.cs" />
+    <Compile Include="PubSub\Messages\TestMessage.cs" />
+    <Compile Include="PubSub\NoAutoWatchTests.cs" />
+    <Compile Include="PubSub\ReceiveActorTests.cs" />
+    <Compile Include="PubSub\PublishMessageActorTests.cs" />
+    <Compile Include="PubSub\ReceiveActorBecomeTests.cs" />
+    <Compile Include="PubSub\TypedActorTests.cs" />
+    <Compile Include="PubSub\UntypedActorTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
