@@ -51,10 +51,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PubSub\IPublishMessageActor.cs" />
+    <Compile Include="PubSub\IPublishMessageActorExtensions.cs" />
+    <Compile Include="PubSub\PublishMessageReceiveActorBase.cs" />
     <Compile Include="PubSub\PublishMessageAttribute.cs" />
     <Compile Include="PubSub\SubscribeMessage.cs" />
     <Compile Include="PubSub\TypedPublishMessageActorBase.cs" />
     <Compile Include="PubSub\UnsubscribeMessage.cs" />
+    <Compile Include="PubSub\UntypedPublishMessageActorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

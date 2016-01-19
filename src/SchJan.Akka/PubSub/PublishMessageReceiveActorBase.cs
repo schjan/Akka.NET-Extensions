@@ -6,59 +6,54 @@ using Akka.Event;
 namespace SchJan.Akka.PubSub
 {
     /// <summary>
-    ///     TypedActor which can publish defined types of messages to subscribers.
+    ///     ReceiveActor which can publish defined types of messages to subscribers.
     /// </summary>
-    public abstract class TypedPublishMessageActorBase : TypedActor, IHandle<SubscribeMessage>,
-        IHandle<UnsubscribeMessage>, IHandle<Terminated>, IPublishMessageActor
+    public class PublishMessageReceiveActorBase : ReceiveActor, IPublishMessageActor
     {
-
         /// <summary>
         ///     True if actor should watch for <see cref="Terminated">Termination</see> of subscribers.
         /// </summary>
         public bool AutoWatchSubscriber { get; }
 
         /// <summary>
-        ///     Creates a new instance of <see cref="TypedPublishMessageActorBase" />.
+        ///     Creates a new instance of <see cref="PublishMessageReceiveActorBase" />.
         /// </summary>
         /// <param name="autoWatchSubscriber">
         ///     True if actor should watch for <see cref="Terminated">Termination</see> of
         ///     subscribers.
         /// </param>
-        protected TypedPublishMessageActorBase(bool autoWatchSubscriber = true)
+        public PublishMessageReceiveActorBase(bool autoWatchSubscriber = true)
         {
             AutoWatchSubscriber = autoWatchSubscriber;
 
             SubscribableMessages = this.GetMessageTypesByAttributes();
 
             Subscribers = new List<Tuple<IActorRef, Type>>();
+
+            RegisterPubSubMessageHandler();
         }
 
         /// <summary>
-        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
+        /// Registers the needed messagehandlers for PublishMessageActor. You need to call that after Become or BecomeStacked command.
         /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(SubscribeMessage message)
+        protected void RegisterPubSubMessageHandler()
         {
-            this.HandleSubscription(message);
+            Receive<SubscribeMessage>(message =>
+            {
+                this.HandleSubscription(message);
+            });
+
+            Receive<UnsubscribeMessage>(message =>
+            {
+                this.HandleUnsubscription(message);
+            });
+
+            Receive<Terminated>(message =>
+            {
+                this.HandleTerminated(message);
+            });
         }
 
-        /// <summary>
-        ///     Handles the specified message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(Terminated message)
-        {
-            this.HandleTerminated(message);
-        }
-
-        /// <summary>
-        ///     Handles unsubscribtions.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(UnsubscribeMessage message)
-        {
-            this.HandleUnsubscription(message);
-        }
 
         /// <summary>
         ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
@@ -85,6 +80,11 @@ namespace SchJan.Akka.PubSub
         }
 
         /// <summary>
+        ///     Subscriber List in style of Tuple(ActorRef, MessageType)
+        /// </summary>
+        public IList<Tuple<IActorRef, Type>> Subscribers { get; }
+
+        /// <summary>
         ///     Messagetypes you can subscribe to.
         /// </summary>
         public IReadOnlyList<Type> SubscribableMessages { get; }
@@ -98,11 +98,6 @@ namespace SchJan.Akka.PubSub
         {
             Context.GetLogger().Info(format, args);
         }
-
-        /// <summary>
-        ///     Subscriber List in style of Tuple(ActorRef, MessageType)
-        /// </summary>
-        public IList<Tuple<IActorRef, Type>> Subscribers { get; }
 
         /// <summary>
         ///     ActorContext Proxy.

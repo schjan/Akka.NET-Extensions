@@ -6,10 +6,9 @@ using Akka.Event;
 namespace SchJan.Akka.PubSub
 {
     /// <summary>
-    ///     TypedActor which can publish defined types of messages to subscribers.
+    ///     UntypedActor which can publish defined types of messages to subscribers.
     /// </summary>
-    public abstract class TypedPublishMessageActorBase : TypedActor, IHandle<SubscribeMessage>,
-        IHandle<UnsubscribeMessage>, IHandle<Terminated>, IPublishMessageActor
+    public abstract class UntypedPublishMessageActorBase : UntypedActor, IPublishMessageActor
     {
 
         /// <summary>
@@ -18,13 +17,13 @@ namespace SchJan.Akka.PubSub
         public bool AutoWatchSubscriber { get; }
 
         /// <summary>
-        ///     Creates a new instance of <see cref="TypedPublishMessageActorBase" />.
+        ///     Creates a new instance of <see cref="UntypedPublishMessageActorBase" />.
         /// </summary>
         /// <param name="autoWatchSubscriber">
         ///     True if actor should watch for <see cref="Terminated">Termination</see> of
         ///     subscribers.
         /// </param>
-        protected TypedPublishMessageActorBase(bool autoWatchSubscriber = true)
+        protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true)
         {
             AutoWatchSubscriber = autoWatchSubscriber;
 
@@ -34,30 +33,18 @@ namespace SchJan.Akka.PubSub
         }
 
         /// <summary>
-        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
+        ///     Messagetypes you can subscribe to.
         /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(SubscribeMessage message)
-        {
-            this.HandleSubscription(message);
-        }
+        public IReadOnlyList<Type> SubscribableMessages { get; }
 
         /// <summary>
-        ///     Handles the specified message.
+        ///     Logs a message with the Info level.
         /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(Terminated message)
+        /// <param name="format">The format.</param>
+        /// <param name="args">The arguments.</param>
+        public void LogInfo(string format, params object[] args)
         {
-            this.HandleTerminated(message);
-        }
-
-        /// <summary>
-        ///     Handles unsubscribtions.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public virtual void Handle(UnsubscribeMessage message)
-        {
-            this.HandleUnsubscription(message);
+            Context.GetLogger().Info(format, args);
         }
 
         /// <summary>
@@ -85,24 +72,29 @@ namespace SchJan.Akka.PubSub
         }
 
         /// <summary>
-        ///     Messagetypes you can subscribe to.
-        /// </summary>
-        public IReadOnlyList<Type> SubscribableMessages { get; }
-
-        /// <summary>
-        ///     Logs a message with the Info level.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The arguments.</param>
-        public void LogInfo(string format, params object[] args)
-        {
-            Context.GetLogger().Info(format, args);
-        }
-
-        /// <summary>
         ///     Subscriber List in style of Tuple(ActorRef, MessageType)
         /// </summary>
         public IList<Tuple<IActorRef, Type>> Subscribers { get; }
+
+        /// <summary>
+        ///     Called when a message is received.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        protected override void OnReceive(object message)
+        {
+            if (message is SubscribeMessage)
+            {
+                this.HandleSubscription((SubscribeMessage) message);
+            }
+            else if (message is UnsubscribeMessage)
+            {
+                this.HandleUnsubscription((UnsubscribeMessage) message);
+            }
+            else if (message is Terminated)
+            {
+                this.HandleTerminated((Terminated) message);
+            }
+        }
 
         /// <summary>
         ///     ActorContext Proxy.

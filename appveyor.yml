@@ -1,11 +1,20 @@
+os: Visual Studio 2015
+
 init:
   - git config --global core.autocrlf input
+
+configuration: Release
+
+environment:
+  CODECOV_TOKEN:
+    secure: M1TbEVum9doUWXqB/mTEYnL8wYaXr5V1+Dz7JluCjac6bYRq82hTMZJ8JeZpsZfA
 
 assembly_info:
   patch: false
 
 install:
   - cmd: nuget restore src/Akka.NET-Extensions.sln
+  - cmd: nuget install OpenCover -Version 4.6.166 -OutputDirectory tools
   - ps: choco install gitversion.portable -y
 
 before_build:
@@ -14,17 +23,28 @@ before_build:
 build:
   project: src/Akka.NET-Extensions.sln
   parallel: true
-  verbosity: quiet
+  verbosity: minimal
 
-after_build:
-  - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj
+test_script:
+  - .\tools\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -target:nunit-console.exe -targetargs:"src\SchJan.Akka.Tests\bin\Release\SchJan.Akka.Tests.dll -noshadow" -returntargetcode -filter:"+[SchJan.Akka*]*" -hideskipped:All -output:opencoverCoverage.xml
+  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+  - pip install codecov
+  - codecov -f "opencoverCoverage.xml"
+
+after_test:
+  - cmd: nuget pack src/SchJan.Akka/SchJan.Akka.csproj -version ""%GitVersion_NuGetVersion%"" -prop ""target=%CONFIGURATION%""
 
 artifacts:
-  - path: /.*\.nupkg/
-  
+  - path: '**\SchJan.*.nupkg'
+
 cache:
   - src\packages -> **\packages.config
-  - tools\
+  - tools -> appveyor.yml
+
+nuget:
+  account_feed: false
+  project_feed: true
+  disable_publish_on_pr: true
 
 deploy:
   - provider: NuGet
@@ -34,11 +54,14 @@ deploy:
     on:
       branch: master
       appveyor_repo_tag: true
-  
+
   - provider: GitHub
     artifact: /.*\.nupkg/
+    description: 'Version bump'
     draft: false
     prerelease: false
+    auth_token:
+      secure: 3dDjg8MjJ3wbGtA9R37P42KEDSkGZiio/7ObP9WM7hpjFPkFdiKe957Q+om1tq4G
     on:
       branch: master
-      appveyor_repo_tag: true 
+      appveyor_repo_tag: true
