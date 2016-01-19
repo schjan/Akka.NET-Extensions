@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Akka.Actor;
-using Akka.Event;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
 using SchJan.Akka.PubSub;
@@ -11,7 +10,7 @@ namespace SchJan.Akka.Tests.PubSub
 {
     [TestFixture]
     public class ReceiveActorBecomeTests : TestKit
-    { 
+    {
         [Test]
         public async void TestBecome()
         {
@@ -19,20 +18,33 @@ namespace SchJan.Akka.Tests.PubSub
 
             var subject = Sys.ActorOf<BecomeActor>("subject");
 
-            receiverActor.Send(subject,
-                new SubscribeMessage(receiverActor, typeof (FooMessage)));
+            receiverActor.Send(subject, new SubscribeMessage(receiverActor, typeof (TestMessage)));
 
             receiverActor.Send(subject, "Hello");
-            
-            receiverActor.ExpectMsg<string>(s => s == "'sup");
+            receiverActor.ExpectMsg<TestMessage>();
+
+
+            receiverActor.Send(subject, "become");
+
+            receiverActor.Send(subject, new SubscribeMessage(receiverActor, typeof (FooMessage)));
+            receiverActor.Send(subject, new UnsubscribeMessage(receiverActor, typeof (TestMessage)));
+            receiverActor.Send(subject, "Hello");
+
+            receiverActor.ExpectMsg<FooMessage>();
+
+
+            receiverActor.Send(subject, "unbecome");
+
+            receiverActor.Send(subject, "Hello");
+            receiverActor.ExpectNoMsg(TimeSpan.FromSeconds(0.5));
 
             var result =
                 await
                     subject.Ask<MessageReceivedCountMessage>(new AskMessageReceivedCountMessage(),
-                        TimeSpan.FromSeconds(2));
+                        TimeSpan.FromSeconds(0.5));
 
-            Assert.That(result.SubscriptionMessages, Is.EqualTo(1));
-            Assert.That(result.UnsubscriptionMessages, Is.EqualTo(0));
+            Assert.That(result.SubscriptionMessages, Is.EqualTo(2));
+            Assert.That(result.UnsubscriptionMessages, Is.EqualTo(1));
             Assert.That(result.TerminationMessages, Is.EqualTo(0));
         }
 
@@ -44,24 +56,26 @@ namespace SchJan.Akka.Tests.PubSub
             {
                 Receive<string>(s =>
                 {
-                    Context.GetLogger().Warning("Received {0} from {1}", s, Sender);
-
-                    Sender.Tell("Hello");
+                    if (s == "become")
+                        BecomeStacked(Cool);
+                    else
+                        this.PublishMessage(new TestMessage("I am normal"));
                 });
-
-                BecomeStacked(Cool);
             }
 
             public void Cool()
             {
+                RegisterPubSubMessageHandler();
+
                 Receive<string>(s =>
                 {
-                    Context.GetLogger().Warning("Received {0} from {1}", s, Sender);
-                    
-                    Sender.Tell("'sup");
+                    if (s == "unbecome")
+                        UnbecomeStacked();
+                    else
+                        this.PublishMessage(new FooMessage("I am cool"));
                 });
             }
-            
+
 
             public new IList<Tuple<IActorRef, Type>> Subscribers => base.Subscribers;
 

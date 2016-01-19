@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
@@ -27,13 +28,15 @@ namespace SchJan.Akka.Tests.PubSub
         }
 
         [Test]
-        public void NoTerminatedUnsubscribing()
+        public async void NoTerminatedUnsubscribing()
         {
             var subject = ActorOfAsTestActorRef<NoAutowatchActor>("subject");
 
             var testProbe = Sys.ActorOf(Props.Create(() => new TestTerminationActor(subject)));
 
             testProbe.Tell(PoisonPill.Instance);
+
+            await Task.Delay(350);
 
             subject.Tell(new FooMessage("Hello"));
 
