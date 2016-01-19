@@ -13,7 +13,7 @@ namespace SchJan.Akka.Tests.PubSub
     {
         [PublishMessage(typeof (FooMessage))]
         [PublishMessage(typeof (TestMessage))]
-        [PublishMessage(typeof(ActorUnsubscribedMessage))]
+        [PublishMessage(typeof (ActorUnsubscribedMessage))]
         public sealed class TypedPublishMessageActorBaseProxy : TypedPublishMessageActorBase,
             IHandle<AskMessageReceivedCountMessage>
         {
@@ -37,17 +37,23 @@ namespace SchJan.Akka.Tests.PubSub
             {
                 this.PublishMessage(new ActorUnsubscribedMessage(message.ActorRef, true));
                 _terminationMessages++;
+
+                base.HandleTerminationMessage(message);
             }
 
             public override void HandleUnsubscriptionMessage(UnsubscribeMessage message)
             {
                 this.PublishMessage(new ActorUnsubscribedMessage(message.Unsubscriber, false));
                 _unsubscribeMessages++;
+
+                base.HandleUnsubscriptionMessage(message);
             }
 
             public override void HandleSubscriptionMessage(SubscribeMessage message)
             {
                 _subscribeMessages++;
+
+                base.HandleSubscriptionMessage(message);
             }
 
             public void Handle(AskMessageReceivedCountMessage message)

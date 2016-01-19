@@ -30,7 +30,7 @@ namespace SchJan.Akka.PubSub
 
             return true;
         }
-        
+
         internal static IReadOnlyList<Type> GetMessageTypesByAttributes(this IPublishMessageActor self)
         {
             return

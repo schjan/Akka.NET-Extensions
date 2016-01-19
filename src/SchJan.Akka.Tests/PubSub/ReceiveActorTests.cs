@@ -7,36 +7,31 @@ using SchJan.Akka.Tests.PubSub.Messages;
 
 namespace SchJan.Akka.Tests.PubSub
 {
-    public class UntypedActorTests :
-        PublishMessageActorBaseTests<UntypedActorTests.UntypedPublishMessageActorBaseProxy>
+    [TestFixture]
+    public class ReceiveActorTests :
+        PublishMessageActorBaseTests<ReceiveActorTests.PublishMessageReceiveActorBaseProxy>
     {
         [PublishMessage(typeof (FooMessage))]
         [PublishMessage(typeof (TestMessage))]
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
-        public sealed class UntypedPublishMessageActorBaseProxy : UntypedPublishMessageActorBase
+        public class PublishMessageReceiveActorBaseProxy : PublishMessageReceiveActorBase
         {
             private int _terminationMessages, _subscribeMessages, _unsubscribeMessages;
 
-            public UntypedPublishMessageActorBaseProxy()
+
+            public PublishMessageReceiveActorBaseProxy()
                 : base(true)
             {
+                Receive<AskMessageReceivedCountMessage>(m =>
+                {
+                    Sender.Tell(new MessageReceivedCountMessage(_subscribeMessages, _unsubscribeMessages,
+                        _terminationMessages));
+                });
             }
 
             public new IList<Tuple<IActorRef, Type>> Subscribers => base.Subscribers;
 
             public new IReadOnlyList<Type> SubscribableMessages => base.SubscribableMessages;
-
-            protected override void OnReceive(object message)
-            {
-                if (message is AskMessageReceivedCountMessage)
-                {
-                    Sender.Tell(new MessageReceivedCountMessage(_subscribeMessages, _unsubscribeMessages,
-                        _terminationMessages));
-                    return;
-                }
-
-                base.OnReceive(message);
-            }
 
             public override void HandleTerminationMessage(Terminated message)
             {
@@ -63,7 +58,7 @@ namespace SchJan.Akka.Tests.PubSub
 
             protected override void Unhandled(object message)
             {
-                Assert.Fail("Unhandled Message occured.");
+                Assert.Fail("Unhandled Message of Type {0} occured.", message.GetType());
             }
         }
     }

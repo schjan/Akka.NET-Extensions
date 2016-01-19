@@ -1,26 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using Akka.Actor;
+using Akka.TestKit.NUnit;
 using NUnit.Framework;
 using SchJan.Akka.PubSub;
+using SchJan.Akka.Tests.PubSub.Actors;
 using SchJan.Akka.Tests.PubSub.Messages;
 
 namespace SchJan.Akka.Tests.PubSub
 {
     [TestFixture]
-    public class ReceiveActorTest :
-        PublishMessageActorBaseTests<ReceiveActorTest.PublishMessageReceiveActorBaseProxy>
+    public class NoAutoWatchTests : TestKit
     {
-        [PublishMessage(typeof (FooMessage))]
-        [PublishMessage(typeof (TestMessage))]
+        [Test]
+        public void Subscribe()
+        {
+            var subject = Sys.ActorOf<NoAutowatchActor>("subject");
+
+            var testProbe = CreateTestProbe();
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof(FooMessage)));
+
+            subject.Tell(new FooMessage("Hello"));
+
+            testProbe.ExpectMsg<FooMessage>(m => m.Content == "Hello");
+        }
+
+        [Test]
+        public void NoTerminatedUnsubscribing()
+        {
+            var subject = ActorOfAsTestActorRef<NoAutowatchActor>("subject");
+
+            var testProbe = Sys.ActorOf(Props.Create(() => new TestTerminationActor(subject)));
+
+            testProbe.Tell(PoisonPill.Instance);
+
+            subject.Tell(new FooMessage("Hello"));
+
+            Assert.That(subject.UnderlyingActor.Subscribers,
+                Contains.Item(new Tuple<IActorRef, Type>(testProbe, typeof (FooMessage))));
+        }
+
+        [PublishMessage(typeof(FooMessage))]
         [PublishMessage(typeof(ActorUnsubscribedMessage))]
-        public sealed class PublishMessageReceiveActorBaseProxy : PublishMessageReceiveActorBase
+        public class NoAutowatchActor : PublishMessageReceiveActorBase
         {
             private int _terminationMessages, _subscribeMessages, _unsubscribeMessages;
 
 
-            public PublishMessageReceiveActorBaseProxy()
-                : base(true)
+            public NoAutowatchActor()
+                : base(false)
             {
                 Receive<AskMessageReceivedCountMessage>(m =>
                 {
@@ -28,7 +57,7 @@ namespace SchJan.Akka.Tests.PubSub
                         _terminationMessages));
                 });
 
-                ReceiveAny(m => { Assert.Fail("Unhandled Message occured."); });
+                Receive<FooMessage>(message => this.PublishMessage(message));
             }
 
             public new IList<Tuple<IActorRef, Type>> Subscribers => base.Subscribers;
@@ -39,22 +68,28 @@ namespace SchJan.Akka.Tests.PubSub
             {
                 this.PublishMessage(new ActorUnsubscribedMessage(message.ActorRef, true));
                 _terminationMessages++;
+
+                base.HandleTerminationMessage(message);
             }
 
             public override void HandleUnsubscriptionMessage(UnsubscribeMessage message)
             {
                 this.PublishMessage(new ActorUnsubscribedMessage(message.Unsubscriber, false));
                 _unsubscribeMessages++;
+
+                base.HandleUnsubscriptionMessage(message);
             }
 
             public override void HandleSubscriptionMessage(SubscribeMessage message)
             {
                 _subscribeMessages++;
+
+                base.HandleSubscriptionMessage(message);
             }
 
             protected override void Unhandled(object message)
             {
-                Assert.Fail("Unhandled Message occured.");
+                Assert.Fail("Unhandled Message of Type {0} occured.", message.GetType());
             }
         }
     }

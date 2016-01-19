@@ -6,6 +6,7 @@ using Akka.TestKit;
 using Akka.TestKit.NUnit;
 using NUnit.Framework;
 using SchJan.Akka.PubSub;
+using SchJan.Akka.Tests.PubSub.Actors;
 using SchJan.Akka.Tests.PubSub.Messages;
 
 namespace SchJan.Akka.Tests.PubSub
@@ -203,7 +204,7 @@ namespace SchJan.Akka.Tests.PubSub
 
             var result = await subject.Ask<MessageReceivedCountMessage>(new AskMessageReceivedCountMessage());
 
-            Assert.That(result.SubscriptionMessages, Is.EqualTo(2));
+            Assert.That(result.SubscriptionMessages, Is.EqualTo(3));
             Assert.That(result.UnsubscriptionMessages, Is.EqualTo(0));
             Assert.That(result.TerminationMessages, Is.EqualTo(1));
         }
@@ -232,21 +233,6 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(result.UnsubscriptionMessages, Is.EqualTo(1));
             Assert.That(result.TerminationMessages, Is.EqualTo(0));
         }
-
-        // TestTerminationActor, because Termination doesn't work well with TestProbe.
-        public class TestTerminationActor : ReceiveActor
-        {
-            public TestTerminationActor(IActorRef actorToSubscribe)
-            {
-                actorToSubscribe.Tell(new SubscribeMessage(Self, typeof (ActorUnsubscribedMessage)));
-            }
-
-            protected override void PostStop()
-            {
-                Context.GetLogger().Warning("TestActor Terminated");
-            }
-        }
-
         #endregion
     }
 }
