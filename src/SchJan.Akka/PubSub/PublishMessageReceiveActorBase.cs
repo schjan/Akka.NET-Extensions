@@ -42,8 +42,32 @@ namespace SchJan.Akka.PubSub
 
             Receive<Terminated>(message =>
             {
-                this.RemoveFromSubscribers(message.ActorRef);
+                this.HandleTerminated(message);
             });
+        }
+
+        /// <summary>
+        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleSubscriptionMessage(SubscribeMessage message)
+        {
+        }
+
+        /// <summary>
+        ///     Handles a Terminated message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleTerminationMessage(Terminated message)
+        {
+        }
+
+        /// <summary>
+        ///     Handles unsubscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleUnsubscriptionMessage(UnsubscribeMessage message)
+        {
         }
 
         /// <summary>

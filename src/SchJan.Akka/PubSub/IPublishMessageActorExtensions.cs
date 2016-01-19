@@ -30,7 +30,7 @@ namespace SchJan.Akka.PubSub
 
             return true;
         }
-
+        
         internal static IReadOnlyList<Type> GetMessageTypesByAttributes(this IPublishMessageActor self)
         {
             return
@@ -47,6 +47,8 @@ namespace SchJan.Akka.PubSub
         /// <param name="message">The <see cref="SubscribeMessage"/></param>
         internal static void HandleSubscription(this IPublishMessageActor self, SubscribeMessage message)
         {
+            self.HandleSubscriptionMessage(message);
+
             if (self.AutoWatchSubscriber)
                 self.ActorContext.Watch(message.Subscriber);
 
@@ -67,6 +69,8 @@ namespace SchJan.Akka.PubSub
         /// <returns>True if <see cref="IActorRef"/> is removed from subscribers.</returns>
         internal static bool HandleUnsubscription(this IPublishMessageActor self, UnsubscribeMessage message)
         {
+            self.HandleUnsubscriptionMessage(message);
+
             if (message.UnsubscribeAllTypes)
                 return RemoveFromSubscribers(self, message.Unsubscriber);
 
@@ -78,6 +82,18 @@ namespace SchJan.Akka.PubSub
                 self.ActorContext.Unwatch(message.Unsubscriber);
 
             return result;
+        }
+
+        /// <summary>
+        /// Handles <see cref="Terminated"/>.
+        /// </summary>
+        /// <param name="self">The <see cref="IPublishMessageActor"/></param>
+        /// <param name="message">The <see cref="Terminated"/></param>
+        internal static void HandleTerminated(this IPublishMessageActor self, Terminated message)
+        {
+            self.HandleTerminationMessage(message);
+
+            RemoveFromSubscribers(self, message.ActorRef);
         }
 
         /// <summary>

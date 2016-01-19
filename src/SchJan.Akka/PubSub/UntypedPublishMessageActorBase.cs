@@ -48,6 +48,30 @@ namespace SchJan.Akka.PubSub
         }
 
         /// <summary>
+        ///     Handles the <see cref="SubscribeMessage" /> to handle subscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleSubscriptionMessage(SubscribeMessage message)
+        {
+        }
+
+        /// <summary>
+        ///     Handles a Terminated message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleTerminationMessage(Terminated message)
+        {
+        }
+
+        /// <summary>
+        ///     Handles unsubscribtions.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public virtual void HandleUnsubscriptionMessage(UnsubscribeMessage message)
+        {
+        }
+
+        /// <summary>
         ///     Subscriber List in style of Tuple(ActorRef, MessageType)
         /// </summary>
         public IList<Tuple<IActorRef, Type>> Subscribers { get; }
@@ -60,17 +84,15 @@ namespace SchJan.Akka.PubSub
         {
             if (message is SubscribeMessage)
             {
-                this.HandleSubscription((SubscribeMessage)message);
+                this.HandleSubscription((SubscribeMessage) message);
             }
             else if (message is UnsubscribeMessage)
             {
-                this.HandleUnsubscription((UnsubscribeMessage)message);
+                this.HandleUnsubscription((UnsubscribeMessage) message);
             }
             else if (message is Terminated)
             {
-                var terminatedMessage = (Terminated) message;
-
-                this.RemoveFromSubscribers(terminatedMessage.ActorRef);
+                this.HandleTerminated((Terminated) message);
             }
         }
 
