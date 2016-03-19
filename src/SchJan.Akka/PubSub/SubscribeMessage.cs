@@ -13,10 +13,12 @@ namespace SchJan.Akka.PubSub
         /// </summary>
         /// <param name="subscriber">Subscriber, most of the time <i>Self</i></param>
         /// <param name="messageType">MessageType to subscribe to.</param>
-        public SubscribeMessage(IActorRef subscriber, Type messageType)
+        /// <param name="confirmation">Set to true if subscriber wants to receive a confirmation</param>
+        public SubscribeMessage(IActorRef subscriber, Type messageType, bool confirmation = false)
         {
             MessageType = messageType;
             Subscriber = subscriber;
+            Confirmation = confirmation;
         }
 
         /// <summary>
@@ -28,5 +30,10 @@ namespace SchJan.Akka.PubSub
         ///     Subscriber
         /// </summary>
         public IActorRef Subscriber { get; }
+
+        /// <summary>
+        ///     True if subscriber wants to receive a confirmation.
+        /// </summary>
+        public bool Confirmation { get; }
     }
 }

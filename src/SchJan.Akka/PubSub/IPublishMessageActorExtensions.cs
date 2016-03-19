@@ -53,12 +53,25 @@ namespace SchJan.Akka.PubSub
                 self.ActorContext.Watch(message.Subscriber);
 
             if (self.Subscribers.Any(x => Equals(x.Item1, message.Subscriber) && x.Item2 == message.MessageType))
+            {
+                if (message.Confirmation)
+                    message.Subscriber.Tell(new SubscribedMessage(true));
                 return;
+            }
 
             if (!self.SubscribableMessages.Contains(message.MessageType))
+            {
+                if (message.Confirmation)
+                    message.Subscriber.Tell(new SubscribedMessage(false));
                 return;
+            }
+
+
 
             self.Subscribers.Add(new Tuple<IActorRef, Type>(message.Subscriber, message.MessageType));
+
+            if (message.Confirmation)
+                message.Subscriber.Tell(new SubscribedMessage(true));
         }
 
         /// <summary>
