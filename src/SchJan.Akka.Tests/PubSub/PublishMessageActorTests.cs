@@ -95,6 +95,24 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
             Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof (TestMessage)));
             Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+
+            testProbe.ExpectNoMsg(100);
+        }
+
+        [Test(Description = "Subscribe to a Message with confirmation")]
+        public void TestSubscribeMessageConfirmation()
+        {
+            var subject = SetUpTestActorRef();
+
+            var testProbe = CreateTestProbe();
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof (TestMessage), true));
+
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof (TestMessage)));
+            Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+
+            testProbe.ExpectMsg<SubscribedMessage>(_ => _.Success);
         }
 
         [Test(Description = "Subscribe to a message which is not supported.")]
@@ -107,6 +125,22 @@ namespace SchJan.Akka.Tests.PubSub
             testProbe.Send(subject, new SubscribeMessage(testProbe, typeof (OopsMessage)));
 
             Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
+
+            testProbe.ExpectNoMsg(100);
+        }
+
+        [Test(Description = "Subscribe to a message which is not supported with confirmation.")]
+        public void TestSubscribeMessageToNoTypeConfirmation()
+        {
+            var subject = SetUpTestActorRef();
+
+            var testProbe = CreateTestProbe();
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof (OopsMessage), true));
+
+            Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(0));
+
+            testProbe.ExpectMsg<SubscribedMessage>(_ => !_.Success);
         }
 
         [Test(Description = "Subscribe to a Message twice")]
@@ -127,6 +161,30 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
             Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof (FooMessage)));
             Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+        }
+
+        [Test(Description = "Subscribe to a Message twice with confirmation")]
+        public void TestSubscribeMessageTwiceConfirmation()
+        {
+            var subject = SetUpTestActorRef();
+
+            var testProbe = CreateTestProbe();
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof (FooMessage), true));
+
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof (FooMessage)));
+            Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+
+            testProbe.ExpectMsg<SubscribedMessage>(_ => _.Success);
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof (FooMessage), true));
+
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof (FooMessage)));
+            Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+
+            testProbe.ExpectMsg<SubscribedMessage>(_ => _.Success);
         }
 
         [Test(Description = "Unsubscribe only from one Message")]
@@ -232,6 +290,7 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(result.UnsubscriptionMessages, Is.EqualTo(1));
             Assert.That(result.TerminationMessages, Is.EqualTo(0));
         }
+
         #endregion
     }
 }

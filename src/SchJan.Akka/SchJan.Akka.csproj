@@ -55,6 +55,7 @@
     <Compile Include="PubSub\IPublishMessageActorExtensions.cs" />
     <Compile Include="PubSub\PublishMessageReceiveActorBase.cs" />
     <Compile Include="PubSub\PublishMessageAttribute.cs" />
+    <Compile Include="PubSub\SubscribedMessage.cs" />
     <Compile Include="PubSub\SubscribeMessage.cs" />
     <Compile Include="PubSub\TypedPublishMessageActorBase.cs" />
     <Compile Include="PubSub\UnsubscribeMessage.cs" />
