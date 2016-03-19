@@ -59,6 +59,9 @@ namespace SchJan.Akka.PubSub
                 return;
 
             self.Subscribers.Add(new Tuple<IActorRef, Type>(message.Subscriber, message.MessageType));
+
+            if (message.Confirmation)
+                message.Subscriber.Tell(new SubscribedMessage(true));
         }
 
         /// <summary>

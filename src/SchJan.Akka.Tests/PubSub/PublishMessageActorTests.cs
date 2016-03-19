@@ -97,6 +97,22 @@ namespace SchJan.Akka.Tests.PubSub
             Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
         }
 
+        [Test(Description = "Subscribe to a Message with confirmation")]
+        public void TestSubscribeMessageConfirmation()
+        {
+            var subject = SetUpTestActorRef();
+
+            var testProbe = CreateTestProbe();
+
+            testProbe.Send(subject, new SubscribeMessage(testProbe, typeof(TestMessage), true));
+            
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item1, Is.EqualTo(testProbe));
+            Assert.That(subject.UnderlyingActor.Subscribers.First().Item2, Is.EqualTo(typeof(TestMessage)));
+            Assert.That(subject.UnderlyingActor.Subscribers.Count, Is.EqualTo(1));
+
+            testProbe.ExpectMsg<SubscribedMessage>(_ => _.Success);
+        }
+
         [Test(Description = "Subscribe to a message which is not supported.")]
         public void TestSubscribeMessageToNoType()
         {
