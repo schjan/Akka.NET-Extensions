@@ -12,7 +12,6 @@ namespace SchJan.Akka.Tests.PubSub
         PublishMessageActorBaseTests<ReceiveActorTests.PublishMessageReceiveActorBaseProxy>
     {
         [PublishMessage(typeof (FooMessage))]
-        [PublishMessage(typeof (TestMessage))]
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
         public class PublishMessageReceiveActorBaseProxy : PublishMessageReceiveActorBase
         {
@@ -20,7 +19,7 @@ namespace SchJan.Akka.Tests.PubSub
 
 
             public PublishMessageReceiveActorBaseProxy()
-                : base(true)
+                : base(true, new[] {typeof(TestMessage)})
             {
                 Receive<AskMessageReceivedCountMessage>(m =>
                 {

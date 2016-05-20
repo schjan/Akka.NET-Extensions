@@ -11,14 +11,13 @@ namespace SchJan.Akka.Tests.PubSub
         PublishMessageActorBaseTests<UntypedActorTests.UntypedPublishMessageActorBaseProxy>
     {
         [PublishMessage(typeof (FooMessage))]
-        [PublishMessage(typeof (TestMessage))]
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
         public sealed class UntypedPublishMessageActorBaseProxy : UntypedPublishMessageActorBase
         {
             private int _terminationMessages, _subscribeMessages, _unsubscribeMessages;
 
             public UntypedPublishMessageActorBaseProxy()
-                : base(true)
+                : base(true, new[] {typeof(TestMessage)})
             {
             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Akka.Actor;
 using Akka.Event;
 
@@ -23,11 +24,19 @@ namespace SchJan.Akka.PubSub
         ///     True if actor should watch for <see cref="Terminated">Termination</see> of
         ///     subscribers.
         /// </param>
-        protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true)
+        /// <param name="messageTypes">
+        ///     Explicit set Messagetypes in case attributes are not available.
+        /// </param>
+        protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true,
+            IReadOnlyList<Type> messageTypes = null)
         {
             AutoWatchSubscriber = autoWatchSubscriber;
 
             SubscribableMessages = this.GetMessageTypesByAttributes();
+            if (messageTypes != null)
+            {
+                SubscribableMessages = SubscribableMessages.Concat(messageTypes).ToArray();
+            }
 
             Subscribers = new List<Tuple<IActorRef, Type>>();
         }

@@ -12,7 +12,6 @@ namespace SchJan.Akka.Tests.PubSub
         PublishMessageActorBaseTests<TypedActorTests.TypedPublishMessageActorBaseProxy>
     {
         [PublishMessage(typeof (FooMessage))]
-        [PublishMessage(typeof (TestMessage))]
         [PublishMessage(typeof (ActorUnsubscribedMessage))]
         public sealed class TypedPublishMessageActorBaseProxy : TypedPublishMessageActorBase,
             IHandle<AskMessageReceivedCountMessage>
@@ -20,7 +19,7 @@ namespace SchJan.Akka.Tests.PubSub
             private int _terminationMessages, _subscribeMessages, _unsubscribeMessages;
 
             public TypedPublishMessageActorBaseProxy()
-                : base(true)
+                : base(true, new[] {typeof(TestMessage)})
             {
             }
 
