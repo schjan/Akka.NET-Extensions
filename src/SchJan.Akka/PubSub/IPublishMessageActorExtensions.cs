@@ -116,10 +116,10 @@ namespace SchJan.Akka.PubSub
         /// <param name="self"></param>
         /// <param name="message"></param>
         /// <returns><b>false</b> if message is not in subscribable messages.</returns>
-        public static bool PublishMessage<T>(this IPublishMessageActor self, T message)
-            where T : class
+        public static bool PublishMessage(this IPublishMessageActor self, object message)
         {
-            var type = typeof (T);
+            // Do not use typeof (T) here! In some cases message is declared as object by compiler but of a different type at runtime.
+            var type = message.GetType();
 
             if (!self.SubscribableMessages.Contains(type))
             {

@@ -27,8 +27,7 @@ namespace SchJan.Akka.PubSub
         /// <param name="messageTypes">
         ///     Explicit set Messagetypes in case attributes are not available.
         /// </param>
-        protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true,
-            IReadOnlyList<Type> messageTypes = null)
+        protected UntypedPublishMessageActorBase(bool autoWatchSubscriber = true, params Type[] messageTypes)
         {
             AutoWatchSubscriber = autoWatchSubscriber;
 
