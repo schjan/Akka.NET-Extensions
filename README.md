@@ -3,7 +3,7 @@
 
 (Usefull) extensions for [Akka.NET](https://github.com/akkadotnet/akka.net)
 
-###Publish Subscribe Pattern
+## Publish Subscribe Pattern
 PublishMessageActor (as _TypedPublishMessageActorBase, UntypedPublishMessageActorBase_ or _PublishMessageReceiveActorBase_) enables Actors to publish predefined types of messages and handles the subscribers for you.
 
 ```csharp
